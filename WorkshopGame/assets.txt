@@ -1,0 +1,10 @@
+﻿All assets/sounds are from Kenney https://kenney.itch.io/
+
+The asset pack I am using is the 'Space Shooter Redux' pack.
+https://www.kenney.nl/assets/space-shooter-redux
+
+License (CC0 1.0 Universal)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Background Music also under Creative Commons License
+From Patrick de Arteaga https://patrickdearteaga.com/arcade-music/

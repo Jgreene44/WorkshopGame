@@ -19,12 +19,17 @@ namespace WorkshopGame
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         SpriteFont font;
+        public SoundEffect playerHitSound;
+        public SoundEffect firingLasersSound;
+
+        public Song backgroundMusic;
 
         public int flag = 0;
 
         public bool previousCollision;
         public bool currentCollision;
 
+        public Texture2D purpleEnd;
         private SpriteBatch backgroundSpriteBatch;
 
         //private Spaceship spaceship;
@@ -66,6 +71,16 @@ namespace WorkshopGame
             gameBackground.LoadContent(Content);
             font = Content.Load<SpriteFont>("myfont");
             boundingTexture = Content.Load<Texture2D>("bounding");
+            backgroundMusic = Content.Load<Song>("music");
+
+            playerHitSound = Content.Load<SoundEffect>("sfx_lose");
+            firingLasersSound = Content.Load<SoundEffect>("sfx_laser1");
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Play(backgroundMusic);
+
+            purpleEnd = Content.Load<Texture2D>("purple");
+            
+
 
             var shipTexture = Content.Load<Texture2D>("playerShip");
 
@@ -75,7 +90,7 @@ namespace WorkshopGame
 
             _sprites = new List<Sprite>()
             {
-                new Ship(shipTexture)
+                new Ship(shipTexture, Content)
                 {
                     Position = new Vector2(400,250),
                     Bullet = new Bullet(Content.Load<Texture2D>("bullet"))
@@ -86,10 +101,20 @@ namespace WorkshopGame
 
         protected override void Update(GameTime gameTime)
         {
+
+            if(gameTime.TotalGameTime.TotalSeconds > 30)
+            {
+                MediaPlayer.Stop();
+            }
+
+            //_previousMouse = _currentMouse;
+            //_currentMouse = Mouse.GetState();
+
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            if (asteroids.Count == 0)
+            if (asteroids.Count == 0 && flag == 0)
             {
                 InitializeAsteroids();
             }
@@ -135,7 +160,7 @@ namespace WorkshopGame
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
 
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.BackToFront);
             backgroundSpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointWrap, null, null, null, null);
             gameBackground.Draw(gameTime, backgroundSpriteBatch);
 
@@ -155,9 +180,32 @@ namespace WorkshopGame
             TimeSpan timeLeft = new TimeSpan(0,0,30);
             //- totalGametime;
 
-            spriteBatch.DrawString(font, "Score: " + score, new Vector2(5, 5), Color.White, 0, new Vector2(0,0), 1.0f, SpriteEffects.None, 0.5f);
-            spriteBatch.DrawString(font, "Time Remaining: " + timeLeft.Subtract(gameTime.TotalGameTime).ToString("m\\:ss"), new Vector2(5, 25), Color.White, 0, new Vector2(0, 0), 1.0f, SpriteEffects.None, 0.5f);
+            TimeSpan showTime = timeLeft.Subtract(gameTime.TotalGameTime);
+            if(gameTime.TotalGameTime.TotalSeconds <= 30 && flag == 0)
+            {
+                spriteBatch.DrawString(font, "Score: " + score, new Vector2(5, 5), Color.White, 0, new Vector2(0, 0), 1.0f, SpriteEffects.None, 0.5f);
+                spriteBatch.DrawString(font, "Time Remaining: " + showTime.ToString("m\\:ss"), new Vector2(5, 25), Color.White, 0, new Vector2(0, 0), 1.0f, SpriteEffects.None, 0.5f);
+            }
 
+            if(gameTime.TotalGameTime.TotalSeconds > 30)
+            {
+                var viewport = graphics.GraphicsDevice.Viewport;
+                Rectangle source = new Rectangle(0, 0, viewport.Width, viewport.Height);
+                _sprites.Clear();
+                asteroids.Clear();
+                spriteBatch.DrawString(font, "Score: " + score, new Vector2(250, 200), Color.White, 0, new Vector2(0, 0), 4.0f, SpriteEffects.None, 0f);
+                backgroundSpriteBatch.Draw(purpleEnd, Vector2.Zero, source, Color.White, 0, Vector2.Zero, 1.0f, SpriteEffects.None, 0.01f);
+                //Content.Unload();
+                MediaPlayer.Stop();
+                flag = 1;
+                //KeyboardState _currentKey = Keyboard.GetState();
+                //while (!_currentKey.IsKeyDown(Keys.R))
+                //{
+
+                //}
+
+
+            }
 
             backgroundSpriteBatch.End();
             spriteBatch.End();
@@ -222,14 +270,10 @@ namespace WorkshopGame
 
 
         }
-
+        public int j = 0;
         private void UpdateAsteroids()
         {
-
-
-
-
-
+            
             for(int i = 0; i < asteroids.Count; i++)
             {
                 asteroids[i].Position += asteroids[i].asteroidVelocity;
@@ -253,56 +297,26 @@ namespace WorkshopGame
 
                 asteroids[i].bounds = new BoundingCircle(asteroids[i].Position, asteroids[i].Width / 2);
 
-                if (CollisionHelper.Collides(_sprites[0].shipBounds, asteroids[i].bounds))
+                
+                if (flag == 0 && CollisionHelper.Collides(_sprites[0].shipBounds, asteroids[i].bounds))
                 {
 
                     asteroids.RemoveAt(i);
                     i--;
                     score--;
                     MakeOneAsteroid();
+                    _sprites[0].color = Color.Red;
+                    playerHitSound.Play();
+
                 }
             }
-
-
-
-
-
-            foreach (Sprite a in asteroids)
+            j++;
+            if(j == 10 && flag == 0)
             {
-                a.Position += a.asteroidVelocity;
-
-                if (a.Position.X + a.Width < 0)
-                {
-                    a.Position = new Vector2(graphics.GraphicsDevice.Viewport.Width, a.Position.Y);
-                }
-                if (a.Position.Y + a.Height < 0)
-                {
-                    a.Position = new Vector2(a.Position.X, graphics.GraphicsDevice.Viewport.Height);
-                }
-                if (a.Position.X - a.Width > graphics.GraphicsDevice.Viewport.Width)
-                {
-                    a.Position = new Vector2(0, a.Position.Y);
-                }
-                if (a.Position.Y - a.Height > graphics.GraphicsDevice.Viewport.Height)
-                {
-                    a.Position = new Vector2(a.Position.X, 0);
-                }
-
-                a.bounds = new BoundingCircle(a.Position, a.Width / 2);
-
-
-                previousCollision = currentCollision;
-                currentCollision = CollisionHelper.Collides(_sprites[0].shipBounds, a.bounds);
-
-                if (currentCollision == true && previousCollision == false)
-                {
-                    score--;
-                }
-
-
-
-                   
+                _sprites[0].color = Color.White;
+                j = 0;
             }
+
         }
     }
 }
