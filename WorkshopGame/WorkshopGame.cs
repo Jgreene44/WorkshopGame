@@ -1,6 +1,15 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Content;
+using System.Runtime.InteropServices;
+using System.Linq;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
+
 
 namespace WorkshopGame
 {
@@ -9,7 +18,16 @@ namespace WorkshopGame
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
 
-        private Spaceship spaceship;
+        private SpriteBatch backgroundSpriteBatch;
+
+        //private Spaceship spaceship;
+
+        private GameBackground gameBackground;
+
+        private List<Sprite> _sprites;
+
+
+
 
         public WorkshopGame()
         {
@@ -21,7 +39,8 @@ namespace WorkshopGame
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            spaceship = new Spaceship();
+            //spaceship = new Spaceship();
+            gameBackground = new GameBackground(this);
 
             base.Initialize();
         }
@@ -29,18 +48,40 @@ namespace WorkshopGame
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            spaceship.LoadContent(Content);
+            backgroundSpriteBatch = new SpriteBatch(GraphicsDevice);
+            gameBackground.LoadContent(Content);
 
-            // TODO: use this.Content to load your game content here
+            var shipTexture = Content.Load<Texture2D>("playerShip");
+
+            _sprites = new List<Sprite>()
+            {
+                new Ship(shipTexture)
+                {
+                    Position = new Vector2(400,250),
+                    Bullet = new Bullet(Content.Load<Texture2D>("bullet"))
+                }
+            };
+
         }
 
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            spaceship.Update(gameTime);
 
-            // TODO: Add your update logic here
+            foreach(var sprite in _sprites.ToArray())
+            {
+                sprite.Update(gameTime, _sprites);
+            }
+
+            for(int i = 0; i < _sprites.Count; i++)
+            {
+                if (_sprites[i].IsRemoved)
+                {
+                    _sprites.RemoveAt(i);
+                    i--;
+                }
+            }
 
             base.Update(gameTime);
         }
@@ -49,9 +90,19 @@ namespace WorkshopGame
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
+
             spriteBatch.Begin();
-            spaceship.Draw(gameTime, spriteBatch);
+            backgroundSpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointWrap, null, null, null, null);
+            gameBackground.Draw(gameTime, backgroundSpriteBatch);
+
+            foreach(var sprite in _sprites)
+            {
+                sprite.Draw(spriteBatch);
+            }
+
+
+
+            backgroundSpriteBatch.End();
             spriteBatch.End();
 
             base.Draw(gameTime);
