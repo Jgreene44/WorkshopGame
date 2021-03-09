@@ -6,12 +6,16 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 using System.Runtime.InteropServices;
+using CollisionExample.Collisions;
+using WorkshopGame.Collisions;
 
 namespace WorkshopGame
 {
     public class Bullet : Sprite
     {
         private float _timer;
+
+        public BoundingRectangle bulletBounds;
 
         public Bullet(Texture2D texture)
             :base(texture)
@@ -23,6 +27,7 @@ namespace WorkshopGame
         {
             _timer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            
             if(_timer > LifeSpan)
             {
                 IsRemoved = true;
@@ -30,6 +35,7 @@ namespace WorkshopGame
 
             //TODO CHANGE LINEAR VELOCITY
             Position += Direction * LinearVelocity;
+            bounds = new BoundingCircle(Position, Width/2);
         }
     }
 }

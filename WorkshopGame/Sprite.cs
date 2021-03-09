@@ -4,17 +4,36 @@ using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
+using CollisionExample.Collisions;
+using WorkshopGame.Collisions;
 
 namespace WorkshopGame
 {
     public class Sprite : ICloneable
     {
-        protected Texture2D _texture;
+        public Texture2D _texture;
         public float _rotation;
         protected KeyboardState _currentKey;
         protected KeyboardState _previousKey;
         protected MouseState _currentMouse;
         protected MouseState _previousMouse;
+
+        public BoundingCircle bounds;
+
+        public BoundingRectangle shipBounds;
+
+        public Vector2 asteroidVelocity;
+
+        public int Width
+        {
+            get { return _texture.Width; }
+        }
+
+        public int Height
+        {
+            get { return _texture.Height; }
+        }
+
 
 
         public Vector2 Position;
@@ -29,11 +48,13 @@ namespace WorkshopGame
         public float LifeSpan = 0f;
 
         public bool IsRemoved = false;
+        
 
         public Sprite(Texture2D texture)
         {
             _texture = texture;
             Origin = new Vector2(_texture.Width / 2, _texture.Height / 2);
+            this.bounds = new BoundingCircle(Position, _texture.Width / 2);
         }
 
         public virtual void Update(GameTime gameTime, List<Sprite> sprites)

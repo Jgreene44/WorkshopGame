@@ -3,12 +3,16 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using CollisionExample.Collisions;
+using WorkshopGame.Collisions;
 
 namespace WorkshopGame
 {
     public class Ship : Sprite
     {
         public Bullet Bullet;
+
+        //public BoundingRectangle shipBounds; 
 
         public Ship(Texture2D texture)
             : base(texture)
@@ -55,6 +59,7 @@ namespace WorkshopGame
 
                 sprites.Add(bullet);
             }
+            this.shipBounds = new BoundingRectangle(Position, Width, Height);
 
         }
         public override void Draw(SpriteBatch spriteBatch)
