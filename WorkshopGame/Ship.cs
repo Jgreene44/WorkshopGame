@@ -19,16 +19,17 @@ namespace WorkshopGame
         public Bullet Bullet;
         public ContentManager Content;
         SoundEffect firingLasersSound;
+        public int Volume;
         
 
         //public BoundingRectangle shipBounds; 
 
-        public Ship(Texture2D texture, ContentManager content)
+        public Ship(Texture2D texture, ContentManager content, int v)
             : base(texture)
         {
             Content = content;
             firingLasersSound = Content.Load<SoundEffect>("sfx_laser1");
-
+            Volume = v;
         }
 
         public override void Update(GameTime gameTime, List<Sprite> sprites)
@@ -68,8 +69,9 @@ namespace WorkshopGame
                 bullet._rotation = this._rotation + (float)Math.PI / 2.0f;
 
                 sprites.Add(bullet);
-
-                firingLasersSound.Play();
+                
+                
+                firingLasersSound.Play((float)Volume/10, 0, 0);
                 //SoundEffect firingLasersSound;
                 //firingLasersSound = Content.Load<SoundEffect>("sfx_laser1");
 

@@ -97,6 +97,13 @@
 /processorParam:TextureFormat=Color
 /build:bullet.png
 
+#begin endGameFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:endGameFont.spritefont
+
 #begin music.ogg
 /importer:OggImporter
 /processor:SongProcessor
